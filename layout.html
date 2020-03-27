@@ -3,9 +3,16 @@
     <title>{{ .Title }}</title>
 </head>
 <body>
+    
+    <script>
+        function doCRUD(id) {
+            console.log(id)
+        }
+    </script>
+
     <h1>{{ .Title }}</h1>
-    {{ range .Operate }}
-    <button onclick = "doCRUD()">{{ . }}</button>
+    {{ range $index, $value := .Operate }}
+    <button id = "{{ . }}" onclick = "doCRUD(this.id)">{{ . }}</button>
     {{end}}
 </body>
 </html>
