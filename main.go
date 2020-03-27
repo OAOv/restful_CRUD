@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 
@@ -149,6 +150,15 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "User with ID = %s was deleted", params["id"])
 }
 
+func layoutHandle(w http.ResponseWriter, r *http.Request) {
+	tmp1 := template.Must(template.ParseFiles("/view/layout.html"))
+	tmp1.Execute(w, struct {
+		Title string
+	}{
+		"test123",
+	})
+}
+
 func main() {
 	db, err = sql.Open("mysql", "root:0000@tcp(127.0.0.1:3306)/test")
 
@@ -157,12 +167,27 @@ func main() {
 	}
 	defer db.Close()
 
-	router := mux.NewRouter()
-	router.HandleFunc("/users", getUsers).Methods("GET")
-	router.HandleFunc("/users", createUser).Methods("POST")
-	router.HandleFunc("/users/{id}", getUser).Methods("GET")
-	router.HandleFunc("/users/{id}", updateUser).Methods("PATCH")
-	router.HandleFunc("/users/{id}", deleteUser).Methods("DELETE")
+	routerSQL := mux.NewRouter()
+	routerSQL.HandleFunc("/users", getUsers).Methods("GET")
+	routerSQL.HandleFunc("/users", createUser).Methods("POST")
+	routerSQL.HandleFunc("/users/{id}", getUser).Methods("GET")
+	routerSQL.HandleFunc("/users/{id}", updateUser).Methods("PATCH")
+	routerSQL.HandleFunc("/users/{id}", deleteUser).Methods("DELETE")
 
-	http.ListenAndServe(":8000", router)
+	go http.ListenAndServe(":8000", routerSQL)
+
+	///////////////
+	routerHttp := mux.NewRouter()
+	routerHttp.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		tmpl := template.Must(template.ParseFiles("layout.html"))
+		tmpl.Execute(w, struct {
+			Title   string
+			Operate []string
+		}{
+			Title:   "users",
+			Operate: []string{"create", "readAll", "readOne", "update", "delete"},
+		})
+	})
+
+	http.ListenAndServe(":8010", routerHttp)
 }
