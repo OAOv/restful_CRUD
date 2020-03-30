@@ -2,10 +2,12 @@ package handler
 
 import "net/http"
 
-type Handler struct{}
+type Handler struct {
+}
 
 func (h *Handler) getUsers(w http.ResponseWriter, r *http.Request) {
-
+	w.Header().Set("Content-Type", "application/json")
+	repo.getUsers(r.Context())
 }
 
 func (h *Handler) createUser(w http.ResponseWriter, r *http.Request) {
