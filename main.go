@@ -137,6 +137,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 */
 
 func main() {
-	db.OpenDB()
+	mysqlConn := db.OpenDB()
+	repo.NewRepo(mysqlConn)
 	handler.RunHTTPServer()
 }

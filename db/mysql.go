@@ -2,14 +2,20 @@ package db
 
 import "database/sql"
 
-var db *sql.DB
-var err error
+type MySQL struct {
+	db  *sql.DB
+	err error
+}
 
-func OpenDB() {
-	db, err = sql.Open("mysql", "root:0000@tcp(127.0.0.1:3306)/test")
+var mysql *MySQL
 
-	if err != nil {
-		panic(err.Error())
+func OpenDB() *MySQL {
+	mysql.db, mysql.err = sql.Open("mysql", "root:0000@tcp(127.0.0.1:3306)/test")
+
+	if mysql.err != nil {
+		panic(mysql.err.Error())
 	}
-	defer db.Close()
+	defer mysql.db.Close()
+
+	return mysql
 }
