@@ -1,0 +1,22 @@
+<html>
+<head>
+    <title>{{ .Title }}</title>
+</head>
+<body>
+    <h1>{{ .Title }}</h1>
+
+    <from method = "POST">
+        <div>
+        {{ range $index, $value := .Input }}
+            <h3>{{ . }}</h3>
+            <input type = "text" id = "{{ . }}"></textarea>
+            {{end}}
+        </div>
+        <br></br>
+
+        {{ range $index, $value := .Operate }}
+        <input type = "submit" id = "{{ . }}" value="{{ . }}"></button>
+        {{end}}
+    </from>
+</body>
+</html>

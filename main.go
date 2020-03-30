@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"net/http"
 
@@ -150,15 +149,33 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "User with ID = %s was deleted", params["id"])
 }
 
-func layoutHandle(w http.ResponseWriter, r *http.Request) {
-	tmp1 := template.Must(template.ParseFiles("/view/layout.html"))
-	tmp1.Execute(w, struct {
-		Title string
-	}{
-		"test123",
-	})
-}
+/*
+func httpHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("./view/layout.html"))
 
+	if r.Method != http.MethodPost {
+		tmpl.Execute(w, struct {
+			Title   string
+			Input   []string
+			Operate []string
+		}{
+			Title:   "users",
+			Input:   []string{"ID", "Name", "Age"},
+			Operate: []string{"create", "readAll", "readOne", "update", "delete"},
+		})
+	} else {
+		log.Println("post something")
+		user := User{
+			ID:   r.FormValue("ID"),
+			Name: r.FormValue("Name"),
+			Age:  r.FormValue("Age"),
+		}
+		log.Println("ID: " + user.ID)
+
+		tmpl.Execute(w, nil)
+	}
+}
+*/
 func main() {
 	db, err = sql.Open("mysql", "root:0000@tcp(127.0.0.1:3306)/test")
 
@@ -176,18 +193,8 @@ func main() {
 
 	go http.ListenAndServe(":8000", routerSQL)
 
-	///////////////
-	routerHttp := mux.NewRouter()
-	routerHttp.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		tmpl := template.Must(template.ParseFiles("layout.html"))
-		tmpl.Execute(w, struct {
-			Title   string
-			Operate []string
-		}{
-			Title:   "users",
-			Operate: []string{"create", "readAll", "readOne", "update", "delete"},
-		})
-	})
-
-	http.ListenAndServe(":8010", routerHttp)
+	/*
+		http.HandleFunc("/", httpHandler)
+		http.ListenAndServe(":8010", nil)
+	*/
 }
