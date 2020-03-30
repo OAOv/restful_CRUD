@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/OAOv/restful_CRUD/repo"
@@ -17,9 +18,10 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	users, err := repo.GetUsers()
 	if err != nil {
-		panic(err)
+		log.Println(err)
+	} else {
+		json.NewEncoder(w).Encode(users)
 	}
-	json.NewEncoder(w).Encode(users)
 }
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -30,10 +32,10 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = repo.CreateUser(body)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+	} else {
+		fmt.Fprintf(w, "New User was created.")
 	}
-
-	fmt.Fprintf(w, "New User was created.")
 }
 
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
@@ -41,9 +43,10 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	user, err := repo.GetUser(params)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+	} else {
+		json.NewEncoder(w).Encode(user)
 	}
-	json.NewEncoder(w).Encode(user)
 }
 
 func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
@@ -55,16 +58,18 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	err = repo.UpdateUser(params, body)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+	} else {
+		fmt.Fprintf(w, "User with ID = %s was updated", params["id"])
 	}
-	fmt.Fprintf(w, "User with ID = %s was updated", params["id"])
 }
 
 func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	err := repo.DeleteUser(params)
 	if err != nil {
-		panic(err)
+		log.Println(err)
+	} else {
+		fmt.Fprintf(w, "User with ID = %s was deleted", params["id"])
 	}
-	fmt.Fprintf(w, "User with ID = %s was deleted", params["id"])
 }
