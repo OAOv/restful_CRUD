@@ -7,65 +7,80 @@ import (
 	"github.com/OAOv/restful_CRUD/types"
 )
 
-func GetUsers() []types.User {
+func GetUsers() ([]types.User, error) {
 	var users []types.User
-	result := db.GetUsers()
+	result, err := db.GetUsers()
+	if err != nil {
+		return nil, err
+	}
 
 	for result.Next() {
 		var user types.User
 		err := result.Scan(&user.ID, &user.Name, &user.Age)
 		if err != nil {
-			panic(err.Error())
+			return nil, err
 		}
 		users = append(users, user)
 	}
 
 	result.Close()
-	return users
+	return users, nil
 }
 
-func CreateUser(body []byte) {
+func CreateUser(body []byte) error {
 	keyVal := make(map[string]string)
 	json.Unmarshal(body, &keyVal)
 	name := keyVal["name"]
 	age := keyVal["age"]
 
-	stmt := db.CreateUser(name, age)
+	stmt, err := db.CreateUser(name, age)
+	if err != nil {
+		return err
+	}
 
 	defer stmt.Close()
-	return
+	return nil
 }
 
-func GetUser(params map[string]string) []types.User {
+func GetUser(params map[string]string) ([]types.User, error) {
 	var users []types.User
-	result := db.GetUser(params["id"])
+	result, err := db.GetUser(params["id"])
+	if err != nil {
+		return nil, err
+	}
 
 	for result.Next() {
 		var user types.User
 		err := result.Scan(&user.ID, &user.Name, &user.Age)
 		if err != nil {
-			panic(err.Error())
+			return nil, err
 		}
 		users = append(users, user)
 	}
 
 	result.Close()
-	return users
+	return users, nil
 }
 
-func UpdateUser(params map[string]string, body []byte) {
+func UpdateUser(params map[string]string, body []byte) error {
 	keyVal := make(map[string]string)
 	json.Unmarshal(body, &keyVal)
 	newName, existsName := keyVal["name"]
 	newAge, existsAge := keyVal["age"]
 
-	stmt := db.UpdateUser(params["id"], newName, existsName, newAge, existsAge)
+	stmt, err := db.UpdateUser(params["id"], newName, existsName, newAge, existsAge)
+	if err != nil {
+		return err
+	}
 	defer stmt.Close()
-	return
+	return nil
 }
 
-func DeleteUser(parmas map[string]string) {
-	stmt := db.DeleteUser(parmas["id"])
+func DeleteUser(parmas map[string]string) error {
+	stmt, err := db.DeleteUser(parmas["id"])
+	if err != nil {
+		return err
+	}
 	defer stmt.Close()
-	return
+	return nil
 }

@@ -6,8 +6,11 @@ import (
 )
 
 func main() {
-	mysqlDB := db.OpenDB()
-	handler.RunHTTPServer()
-
+	mysqlDB, err := db.OpenDB()
+	if err != nil {
+		panic(err)
+	}
 	defer mysqlDB.Close()
+
+	handler.RunHTTPServer()
 }
