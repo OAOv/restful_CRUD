@@ -17,9 +17,9 @@ func NewRepo(mysql *db.MySQL) (repo *MySQLRepo) {
 	}
 }
 
-func (m *MySQLRepo) getUsers(ctx context.Context) []types.User {
+func (m *MySQLRepo) GetUsers(ctx context.Context) []types.User {
 	var users []types.User
-	result := db.getUsers()
+	result := db.GetUsers()
 
 	for result.Next() {
 		var user types.User

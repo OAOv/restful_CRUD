@@ -20,7 +20,7 @@ func OpenDB() *MySQL {
 	return mysql
 }
 
-func getUsers() *sql.Rows {
+func GetUsers() *sql.Rows {
 	result, err := mysql.db.Query("SELECT * FROM user")
 	if err != nil {
 		panic(err.Error())
