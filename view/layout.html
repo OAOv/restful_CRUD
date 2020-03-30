@@ -5,7 +5,7 @@
 <body>
     <h1>{{ .Title }}</h1>
 
-    <from method = "POST">
+    <form method = "POST">
         <div>
         {{ range $index, $value := .Input }}
             <h3>{{ . }}</h3>
@@ -17,6 +17,6 @@
         {{ range $index, $value := .Operate }}
         <input type = "submit" id = "{{ . }}" value="{{ . }}"></button>
         {{end}}
-    </from>
+    </form>
 </body>
 </html>
