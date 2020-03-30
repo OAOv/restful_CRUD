@@ -1,4 +1,4 @@
-module restful_CRUD
+module github.com/OAOv/restful_CRUD
 
 go 1.12
 
