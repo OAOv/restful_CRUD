@@ -19,3 +19,13 @@ func OpenDB() *MySQL {
 
 	return mysql
 }
+
+func getUsers() *sql.Rows {
+	result, err := mysql.db.Query("SELECT * FROM user")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+	return result
+}

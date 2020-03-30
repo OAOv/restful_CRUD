@@ -19,13 +19,7 @@ func NewRepo(mysql *db.MySQL) (repo *MySQLRepo) {
 
 func (m *MySQLRepo) getUsers(ctx context.Context) []types.User {
 	var users []types.User
-
-	result, err := m.repo.db.Query("SELECT * FROM user")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer result.Close()
+	result := db.getUsers()
 
 	for result.Next() {
 		var user types.User
