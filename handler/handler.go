@@ -91,12 +91,10 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 	if !isOne {
 		body, err = DoReadAllRequest()
 		json.Unmarshal(body, &users)
-		fmt.Println(users)
 	} else {
 		isOne = false
 		body, err = DoReadOneRequest(searchID)
 		json.Unmarshal(body, &users)
-		fmt.Println(users)
 	}
 
 	if r.Method != http.MethodPost {
