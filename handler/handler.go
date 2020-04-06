@@ -19,6 +19,9 @@ type Handler struct {
 type FHandler struct {
 }
 
+var isOne = false
+var searchID = ""
+
 func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	users, err := repo.GetUsers()
@@ -82,18 +85,19 @@ func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("./view/layout.html"))
 
-	req, _ := http.NewRequest("GET", "http://localhost:8000/users", nil)
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-	defer resp.Body.Close()
-
-	body, _ := ioutil.ReadAll(resp.Body)
 	var users []types.User
-	json.Unmarshal(body, &users)
-	fmt.Println(users)
+	var body []byte
+	var err error
+	if !isOne {
+		body, err = DoReadAllRequest()
+		json.Unmarshal(body, &users)
+		fmt.Println(users)
+	} else {
+		isOne = false
+		body, err = DoReadOneRequest(searchID)
+		json.Unmarshal(body, &users)
+		fmt.Println(users)
+	}
 
 	if r.Method != http.MethodPost {
 		tmpl.Execute(w, struct {
@@ -104,7 +108,7 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 		}{
 			Title:   "users",
 			Input:   []string{"ID", "Name", "Age"},
-			Operate: []string{"create", "update", "delete"},
+			Operate: []string{"create", "readAll", "readOne", "update", "delete"},
 			List:    users,
 		})
 	} else {
@@ -113,6 +117,11 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 		switch r.FormValue("btn") {
 		case "create":
 			body, err = DoCreateRequest(r.FormValue("Name"), r.FormValue("Age"))
+
+		case "readOne":
+			body, err = DoReadOneRequest(r.FormValue("ID"))
+			isOne = true
+			searchID = r.FormValue("ID")
 
 		case "update":
 			body, err = DoUpdateRequest(r.FormValue("ID"), r.FormValue("Name"), r.FormValue("Age"))

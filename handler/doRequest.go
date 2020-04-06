@@ -29,6 +29,32 @@ func DoCreateRequest(name string, age string) ([]byte, error) {
 	return body, nil
 }
 
+func DoReadAllRequest() ([]byte, error) {
+	req, _ := http.NewRequest("GET", "http://localhost:8000/users", nil)
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	return body, err
+}
+
+func DoReadOneRequest(id string) ([]byte, error) {
+	req, _ := http.NewRequest("GET", "http://localhost:8000/users/"+id, nil)
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	return body, err
+}
+
 func DoUpdateRequest(id string, name string, age string) ([]byte, error) {
 	var jsonStr []byte
 	if name != "" && age != "" {
