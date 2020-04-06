@@ -117,7 +117,6 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 			body, err = DoCreateRequest(r.FormValue("Name"), r.FormValue("Age"))
 
 		case "readOne":
-			body, err = DoReadOneRequest(r.FormValue("ID"))
 			isOne = true
 			searchID = r.FormValue("ID")
 
