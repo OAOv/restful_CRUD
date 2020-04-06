@@ -6,17 +6,30 @@
     <h1>{{ .Title }}</h1>
 
     <form method = "POST">
-        <div>
         {{ range $index, $value := .Input }}
-            <h3>{{ . }}</h3>
-            <input type = "text" id = "{{ . }}"></textarea>
-            {{end}}
-        </div>
+            <h4>{{ . }}</h4>
+            <input type = "text" name = "{{ . }}"></input>
+        {{end}}
         <br></br>
 
         {{ range $index, $value := .Operate }}
-        <input type = "submit" id = "{{ . }}" value="{{ . }}"></button>
+        <input type = "submit" id = "{{ . }}" value = "{{ . }}" name = "btn"></input>
         {{end}}
     </form>
+
+    <table style="width: 300; border:3px #cccccc solid; padding:5px; text-align: center;" rules="all" cellpadding='5';>
+    <tr>
+    {{ range $index, $value := .Input }}
+        <td>{{ . }}</td>
+    {{end}}
+    </tr>
+    {{ range $item := .List }}
+    <tr>
+        <td>{{ .ID }}</td>
+        <td>{{ .Name }}</td>
+        <td>{{ .Age }}</td>
+    </tr>
+    {{end}}
+    </table>
 </body>
 </html>

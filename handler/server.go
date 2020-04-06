@@ -10,8 +10,14 @@ func RunHTTPServer() {
 	routerSQL := mux.NewRouter()
 	Router(routerSQL)
 
-	err := http.ListenAndServe(":8000", routerSQL)
-	if err != nil {
-		panic(err.Error())
-	}
+	go func() {
+		err := http.ListenAndServe(":8000", routerSQL)
+		if err != nil {
+			panic(err.Error())
+		}
+	}()
+
+	fRouter := mux.NewRouter()
+	FRouter(fRouter)
+	http.ListenAndServe(":8010", fRouter)
 }

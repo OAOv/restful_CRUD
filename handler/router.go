@@ -11,3 +11,9 @@ func Router(router *mux.Router) {
 	router.HandleFunc("/users/{id}", h.UpdateUser).Methods("PATCH")
 	router.HandleFunc("/users/{id}", h.DeleteUser).Methods("DELETE")
 }
+
+func FRouter(router *mux.Router) {
+	fh := &FHandler{}
+
+	router.HandleFunc("/", fh.TmplHandler)
+}
