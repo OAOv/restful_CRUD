@@ -35,7 +35,7 @@ func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 
 	err = repo.CreateUser(body)
@@ -61,7 +61,7 @@ func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		panic(err.Error())
+		log.Println(err.Error())
 	}
 
 	err = repo.UpdateUser(params, body)
