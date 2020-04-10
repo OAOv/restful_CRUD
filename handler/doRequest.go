@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+var url = "http://localhost:8000/users"
+
 func ClientDo(req *http.Request) ([]byte, error) {
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -21,7 +23,7 @@ func ClientDo(req *http.Request) ([]byte, error) {
 
 func DoCreateRequest(name string, age string) ([]byte, error) {
 	var jsonStr = []byte("{\"name\":\"" + name + "\",\"age\":\"" + age + "\"}")
-	req, _ := http.NewRequest("POST", "http://localhost:8000/users", bytes.NewBuffer(jsonStr))
+	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
@@ -30,7 +32,7 @@ func DoCreateRequest(name string, age string) ([]byte, error) {
 }
 
 func DoReadAllRequest() ([]byte, error) {
-	req, _ := http.NewRequest("GET", "http://localhost:8000/users", nil)
+	req, _ := http.NewRequest("GET", url, nil)
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
@@ -39,7 +41,7 @@ func DoReadAllRequest() ([]byte, error) {
 }
 
 func DoReadOneRequest(id string) ([]byte, error) {
-	req, _ := http.NewRequest("GET", "http://localhost:8000/users/"+id, nil)
+	req, _ := http.NewRequest("GET", url+"/"+id, nil)
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
@@ -56,7 +58,7 @@ func DoUpdateRequest(id string, name string, age string) ([]byte, error) {
 	} else if name == "" && age != "" {
 		jsonStr = []byte("{\"age\":\"" + age + "\"}")
 	}
-	req, _ := http.NewRequest("PATCH", "http://localhost:8000/users/"+id, bytes.NewBuffer(jsonStr))
+	req, _ := http.NewRequest("PATCH", url+"/"+id, bytes.NewBuffer(jsonStr))
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
@@ -65,7 +67,7 @@ func DoUpdateRequest(id string, name string, age string) ([]byte, error) {
 }
 
 func DoDeleteRequset(id string) ([]byte, error) {
-	req, _ := http.NewRequest("DELETE", "http://localhost:8000/users/"+id, nil)
+	req, _ := http.NewRequest("DELETE", url+"/"+id, nil)
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
