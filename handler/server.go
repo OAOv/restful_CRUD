@@ -3,19 +3,14 @@ package handler
 import (
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/mux"
 )
 
 func RunHTTPServer() {
-	routerSQL := mux.NewRouter()
-	Router(routerSQL)
-
-	go func() {
-		err := http.ListenAndServe(":8000", routerSQL)
-		if err != nil {
-			panic(err.Error())
-		}
-	}()
+	router := gin.Default()
+	InitRouter(router)
+	router.Run(":8000")
 
 	fRouter := mux.NewRouter()
 	FRouter(fRouter)

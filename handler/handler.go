@@ -2,18 +2,17 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"text/template"
 
-	"github.com/OAOv/restful_CRUD/repo"
+	"github.com/OAOv/restful_CRUD/service"
 	"github.com/OAOv/restful_CRUD/types"
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-type Handler struct {
+type UserAPI struct {
+	userService service.UserService
 }
 
 type FHandler struct {
@@ -22,64 +21,26 @@ type FHandler struct {
 var isOne = false
 var searchID = ""
 
-func (h *Handler) GetUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	users, err := repo.GetUsers()
+func (u *UserAPI) CreateUser(c *gin.Context) {
+}
+
+func (u *UserAPI) GetUsers(c *gin.Context) {
+	users, err := u.userService.GetUsers()
 	if err != nil {
-		log.Println(err)
+		log.Println(types.ErrInvalidParms)
+		json.NewEncoder(c).Encode("{status: \"fatal\", message \"server cannot query\"}")
 	} else {
-		json.NewEncoder(w).Encode(users)
+		json.NewEncoder(c).Encode(users)
 	}
 }
 
-func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Println(err)
-	}
-
-	err = repo.CreateUser(body)
-	if err != nil {
-		log.Println(err)
-	} else {
-		fmt.Fprintf(w, "New User was created.")
-	}
+func (u *UserAPI) GetUser(c *gin.Context) {
 }
 
-func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	user, err := repo.GetUser(params)
-	if err != nil {
-		log.Println(err)
-	} else {
-		json.NewEncoder(w).Encode(user)
-	}
+func (u *UserAPI) UpdateUser(c *gin.Context) {
 }
 
-func (h *Handler) UpdateUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Println(err.Error())
-	}
-
-	err = repo.UpdateUser(params, body)
-	if err != nil {
-		log.Println(err)
-	} else {
-		fmt.Fprintf(w, "User with ID = %s was updated", params["id"])
-	}
-}
-
-func (h *Handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	err := repo.DeleteUser(params)
-	if err != nil {
-		log.Println(err)
-	} else {
-		fmt.Fprintf(w, "User with ID = %s was deleted", params["id"])
-	}
+func (u *UserAPI) DeleteUser(c *gin.Context) {
 }
 
 func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
