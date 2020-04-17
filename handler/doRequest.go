@@ -31,27 +31,13 @@ func DoCreateRequest(name string, age string) ([]byte, error) {
 
 func DoReadAllRequest() ([]byte, error) {
 	req, _ := http.NewRequest("GET", "http://localhost:8000/users", nil)
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ClientDo(req)
 	return body, err
 }
 
 func DoReadOneRequest(id string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", "http://localhost:8000/users/"+id, nil)
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ClientDo(req)
 	return body, err
 }
 
