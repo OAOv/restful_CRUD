@@ -20,15 +20,40 @@ type FHandler struct {
 }
 
 var isOne = false
+var isGet = true
 var searchID = ""
+var body []byte
+var err error
 
 func (u *UserAPI) CreateUser(c *gin.Context) {
+	user := types.User{}
+	c.BindJSON(&user)
+	if user.Name == "" || user.Age == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrEmptyInput.Error(),
+		})
+		return
+	}
+
+	err = u.userService.CreateUser(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"data":    nil,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusInternalServerError, gin.H{
+		"data":    nil,
+		"message": "create compeleted",
+	})
+	return
 }
 
 func (u *UserAPI) GetUsers(c *gin.Context) {
 	users, err := u.userService.GetUsers()
 	if err != nil {
-		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"data":    nil,
 			"message": err.Error(),
@@ -37,16 +62,22 @@ func (u *UserAPI) GetUsers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data":    users,
-		"message": "status OK",
+		"message": "readAll compeleted",
 	})
 }
 
 func (u *UserAPI) GetUser(c *gin.Context) {
 	id := c.Param("id")
-	if _, err := strconv.ParseInt(id, 10, 32); err != nil {
+	if val, err := strconv.ParseInt(id, 10, 32); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"data":    nil,
 			"message": types.ErrInvalidType.Error(),
+		})
+		return
+	} else if val <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrInvalidInputRange.Error(),
 		})
 		return
 	}
@@ -66,34 +97,94 @@ func (u *UserAPI) GetUser(c *gin.Context) {
 	users = append(users, user)
 	c.JSON(http.StatusOK, gin.H{
 		"data":    users,
-		"message": "status OK",
+		"message": "readOne compeleted",
 	})
 	return
 }
 
 func (u *UserAPI) UpdateUser(c *gin.Context) {
+	user := types.User{}
+	c.BindJSON(&user)
+	if val, err := strconv.ParseInt(user.ID, 10, 32); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrInvalidType.Error(),
+		})
+		return
+	} else if val <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrInvalidInputRange.Error(),
+		})
+		return
+	} else if user.Name == "" && user.Age == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrEmptyInput.Error(),
+		})
+		return
+	}
+
+	err = u.userService.UpdateUser(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"data":    nil,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data":    nil,
+		"message": "update compeleted",
+	})
 }
 
 func (u *UserAPI) DeleteUser(c *gin.Context) {
+	id := c.Param("id")
+	if val, err := strconv.ParseInt(id, 10, 32); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrInvalidType.Error(),
+		})
+		return
+	} else if val <= 0 {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"data":    nil,
+			"message": types.ErrInvalidInputRange.Error(),
+		})
+		return
+	}
+
+	err = u.userService.DeleteUser(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"data":    nil,
+			"message": err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data":    nil,
+		"message": "delete compeleted",
+	})
 }
 
 func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("./view/layout.html"))
 
 	var users types.UserData
-	var body []byte
-	var err error
-	if !isOne {
-		body, err = DoReadAllRequest()
-		json.Unmarshal(body, &users)
-	} else {
-		isOne = false
-		body, err = DoReadOneRequest(searchID)
-		json.Unmarshal(body, &users)
-	}
-	log.Println("Body Response: " + string(body))
 
 	if r.Method != http.MethodPost {
+		if !isOne && isGet {
+			body, err = DoReadAllRequest()
+		} else if isGet {
+			isOne = false
+			body, err = DoReadOneRequest(searchID)
+		}
+
+		log.Println("Body Response: " + string(body))
+		json.Unmarshal(body, &users)
+
 		tmpl.Execute(w, struct {
 			Title   string
 			Input   []string
@@ -112,16 +203,23 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 
 		switch r.FormValue("btn") {
 		case "create":
-			body, err = DoCreateRequest(r.FormValue("Name"), r.FormValue("Age"))
+			isGet = false
+			body, err = DoCreateRequest(r.FormValue("ID"), r.FormValue("Name"), r.FormValue("Age"))
+
+		case "readAll":
+			isGet = true
 
 		case "readOne":
 			isOne = true
+			isGet = true
 			searchID = r.FormValue("ID")
 
 		case "update":
+			isGet = false
 			body, err = DoUpdateRequest(r.FormValue("ID"), r.FormValue("Name"), r.FormValue("Age"))
 
 		case "delete":
+			isGet = false
 			body, err = DoDeleteRequset(r.FormValue("ID"))
 		}
 		if err != nil {

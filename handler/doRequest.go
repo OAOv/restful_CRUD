@@ -19,9 +19,9 @@ func ClientDo(req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func DoCreateRequest(name string, age string) ([]byte, error) {
-	var jsonStr = []byte("{\"name\":\"" + name + "\",\"age\":\"" + age + "\"}")
-	req, _ := http.NewRequest("POST", "http://localhost:8000/users", bytes.NewBuffer(jsonStr))
+func DoCreateRequest(id string, name string, age string) ([]byte, error) {
+	var jsonStr = []byte("{\"id\":\"" + id + "\",\"name\":\"" + name + "\",\"age\":\"" + age + "\"}")
+	req, _ := http.NewRequest(http.MethodPost, "http://localhost:8000/user", bytes.NewBuffer(jsonStr))
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
@@ -39,6 +39,9 @@ func DoReadAllRequest() ([]byte, error) {
 }
 
 func DoReadOneRequest(id string) ([]byte, error) {
+	if id == "" {
+		id = "-1"
+	}
 	req, _ := http.NewRequest(http.MethodGet, "http://localhost:8000/user/"+id, nil)
 	body, err := ClientDo(req)
 	if err != nil {
@@ -48,15 +51,11 @@ func DoReadOneRequest(id string) ([]byte, error) {
 }
 
 func DoUpdateRequest(id string, name string, age string) ([]byte, error) {
-	var jsonStr []byte
-	if name != "" && age != "" {
-		jsonStr = []byte("{\"name\":\"" + name + "\",\"age\":\"" + age + "\"}")
-	} else if name != "" && age == "" {
-		jsonStr = []byte("{\"name\":\"" + name + "\"}")
-	} else if name == "" && age != "" {
-		jsonStr = []byte("{\"age\":\"" + age + "\"}")
+	if id == "" {
+		id = "-1"
 	}
-	req, _ := http.NewRequest("PATCH", "http://localhost:8000/users/"+id, bytes.NewBuffer(jsonStr))
+	var jsonStr = []byte("{\"id\":\"" + id + "\",\"name\":\"" + name + "\",\"age\":\"" + age + "\"}")
+	req, _ := http.NewRequest("PATCH", "http://localhost:8000/user/"+id, bytes.NewBuffer(jsonStr))
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err
@@ -65,7 +64,7 @@ func DoUpdateRequest(id string, name string, age string) ([]byte, error) {
 }
 
 func DoDeleteRequset(id string) ([]byte, error) {
-	req, _ := http.NewRequest("DELETE", "http://localhost:8000/users/"+id, nil)
+	req, _ := http.NewRequest("DELETE", "http://localhost:8000/user/"+id, nil)
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err

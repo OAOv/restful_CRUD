@@ -16,22 +16,23 @@ func OpenDB() (*sql.DB, error) {
 	return db, err
 }
 
-/*
-func CreateUser(body []byte) error {
-	keyVal := make(map[string]string)
-	json.Unmarshal(body, &keyVal)
-	name := keyVal["name"]
-	age := keyVal["age"]
-
-	stmt, err := db.CreateUser(name, age)
+func CreateUser(user types.User) error {
+	stmt, err := db.Prepare("INSERT INTO user (id, name, age) VALUES (?, ?, ?)")
+	defer stmt.Close()
 	if err != nil {
-		return err
+		return types.ErrServerQueryError
+	}
+	if user.ID == "" {
+		user.ID = "0"
+	}
+	_, err = stmt.Exec(user.ID, user.Name, user.Age)
+	if err != nil {
+		return types.ErrServerQueryError
 	}
 
-	defer stmt.Close()
 	return nil
 }
-*/
+
 func GetUsers() ([]types.User, error) {
 	var users []types.User
 
@@ -64,33 +65,44 @@ func GetUser(id string) (types.User, error) {
 	result.Next()
 	err = result.Scan(&user.ID, &user.Name, &user.Age)
 	if err != nil {
-		return user, types.ErrInvalidParams
+		return user, types.ErrNotFound
 	}
 
 	return user, nil
 }
 
-/*
-func UpdateUser(params map[string]string, body []byte) error {
-	keyVal := make(map[string]string)
-	json.Unmarshal(body, &keyVal)
-	newName, existsName := keyVal["name"]
-	newAge, existsAge := keyVal["age"]
-
-	stmt, err := db.UpdateUser(params["id"], newName, existsName, newAge, existsAge)
-	if err != nil {
-		return err
-	}
+func UpdateUser(user types.User) error {
+	stmt, err := db.Prepare("UPDATE user SET name  = ?, age = ? WHERE id = ?")
 	defer stmt.Close()
+
+	if user.Name != "" && user.Age == "" {
+		stmt, err = db.Prepare("UPDATE user SET name  = ? WHERE id = ?")
+		_, err = stmt.Exec(user.Name, user.ID)
+	} else if user.Name == "" && user.Age != "" {
+		stmt, err = db.Prepare("UPDATE user SET age = ? WHERE id = ?")
+		_, err = stmt.Exec(user.Age, user.ID)
+	} else {
+		_, err = stmt.Exec(user.Name, user.Age, user.ID)
+	}
+
+	if err != nil {
+		return types.ErrServerQueryError
+	}
+
 	return nil
 }
 
-func DeleteUser(parmas map[string]string) error {
-	stmt, err := db.DeleteUser(parmas["id"])
-	if err != nil {
-		return err
-	}
+func DeleteUser(id string) error {
+	stmt, err := db.Prepare("DELETE FROM user WHERE id = ?")
 	defer stmt.Close()
+	if err != nil {
+		return types.ErrServerQueryError
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		return types.ErrServerQueryError
+	}
+
 	return nil
 }
-*/
