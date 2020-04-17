@@ -9,10 +9,10 @@ import (
 func ClientDo(req *http.Request) ([]byte, error) {
 	client := http.Client{}
 	resp, err := client.Do(req)
+	defer resp.Body.Close()
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	body, _ := ioutil.ReadAll(resp.Body)
 
@@ -30,7 +30,7 @@ func DoCreateRequest(name string, age string) ([]byte, error) {
 }
 
 func DoReadAllRequest() ([]byte, error) {
-	req, _ := http.NewRequest("GET", "http://localhost:8000/users", nil)
+	req, _ := http.NewRequest(http.MethodGet, "http://localhost:8000/users", nil)
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err

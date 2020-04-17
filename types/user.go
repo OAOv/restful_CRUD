@@ -5,3 +5,7 @@ type User struct {
 	Name string `json:"name"`
 	Age  string `json:"age"`
 }
+
+type UserData struct {
+	Data []User `json:"data"`
+}

@@ -29,13 +29,11 @@ func (u *UserAPI) GetUsers(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    -1,
 			"message": err.Error(),
 		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"code": 1,
 		"data": users,
 	})
 }
@@ -52,7 +50,7 @@ func (u *UserAPI) DeleteUser(c *gin.Context) {
 func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("./view/layout.html"))
 
-	var users []types.User
+	var users []types.UserData
 	var body []byte
 	var err error
 	if !isOne {
@@ -63,18 +61,19 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 		body, err = DoReadOneRequest(searchID)
 		json.Unmarshal(body, &users)
 	}
+	log.Println(string(body))
 
 	if r.Method != http.MethodPost {
 		tmpl.Execute(w, struct {
 			Title   string
 			Input   []string
 			Operate []string
-			List    []types.User
+			Data    []types.User
 		}{
 			Title:   "users",
 			Input:   []string{"ID", "Name", "Age"},
 			Operate: []string{"create", "readAll", "readOne", "update", "delete"},
-			List:    users,
+			Data:    users.Data,
 		})
 	} else {
 		log.Println("button: " + r.FormValue("btn"))

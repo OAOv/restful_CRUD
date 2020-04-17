@@ -10,7 +10,7 @@ import (
 func RunHTTPServer() {
 	router := gin.Default()
 	InitRouter(router)
-	router.Run(":8000")
+	go router.Run(":8000")
 
 	fRouter := mux.NewRouter()
 	FRouter(fRouter)

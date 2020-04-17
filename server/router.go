@@ -7,16 +7,19 @@ import (
 )
 
 func InitRouter(router *gin.Engine) {
+	gh := &handler.UserAPI{}
 	g1 := router.Group("")
 	{
-		g1.POST("/user", CreateUser)
-		g1.GET("/users", handler.GetUsers)
-		g1.GET("/user/:id", GetUser)
-		g1.PATCH("/user/:id", UpdateUser)
-		g1.DELETE("/user/:id", DeleteUser)
+		g1.POST("/user", gh.CreateUser)
+		g1.GET("/users", gh.GetUsers)
+		g1.GET("/user/:id", gh.GetUser)
+		g1.PATCH("/user/:id", gh.UpdateUser)
+		g1.DELETE("/user/:id", gh.DeleteUser)
 	}
 }
 
 func FRouter(router *mux.Router) {
-	router.HandleFunc("/", handler.TmplHandler)
+	fh := &handler.FHandler{}
+
+	router.HandleFunc("/", fh.TmplHandler)
 }
