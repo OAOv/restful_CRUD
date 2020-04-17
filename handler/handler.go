@@ -6,12 +6,13 @@ import (
 	"net/http"
 	"text/template"
 
+	"github.com/OAOv/restful_CRUD/service"
 	"github.com/OAOv/restful_CRUD/types"
 	"github.com/gin-gonic/gin"
 )
 
 type UserAPI struct {
-	userService UserService
+	userService service.UserService
 }
 
 type FHandler struct {
@@ -25,15 +26,18 @@ func (u *UserAPI) CreateUser(c *gin.Context) {
 
 func (u *UserAPI) GetUsers(c *gin.Context) {
 	users, err := u.UserService.GetUsers()
+	if err != nil {
+		log.Printf(types.ErrInvalidParms)
+	}
 }
 
-func (h *Handler) GetUser(c *gin.Context) {
+func (u *UserAPI) GetUser(c *gin.Context) {
 }
 
-func (h *Handler) UpdateUser(c *gin.Context) {
+func (u *UserAPI) UpdateUser(c *gin.Context) {
 }
 
-func (h *Handler) DeleteUser(c *gin.Context) {
+func (u *UserAPI) DeleteUser(c *gin.Context) {
 }
 
 func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
