@@ -27,11 +27,17 @@ func (u *UserAPI) CreateUser(c *gin.Context) {
 func (u *UserAPI) GetUsers(c *gin.Context) {
 	users, err := u.userService.GetUsers()
 	if err != nil {
-		log.Println(types.ErrInvalidParms)
-		json.NewEncoder(c).Encode("{status: \"fatal\", message \"server cannot query\"}")
-	} else {
-		json.NewEncoder(c).Encode(users)
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    -1,
+			"message": err.Error(),
+		})
+		return
 	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"data": users,
+	})
 }
 
 func (u *UserAPI) GetUser(c *gin.Context) {

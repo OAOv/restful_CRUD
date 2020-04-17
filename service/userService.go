@@ -10,7 +10,7 @@ type UserService struct {
 }
 
 func (u *UserService) GetUsers() ([]types.User, error) {
-	users, err := u.userRepository.GetUsers()
+	users, err := repository.GetUsers()
 	if err != nil {
 		return nil, err
 	}
