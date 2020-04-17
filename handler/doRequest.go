@@ -32,12 +32,18 @@ func DoCreateRequest(name string, age string) ([]byte, error) {
 func DoReadAllRequest() ([]byte, error) {
 	req, _ := http.NewRequest("GET", "http://localhost:8000/users", nil)
 	body, err := ClientDo(req)
+	if err != nil {
+		return nil, err
+	}
 	return body, err
 }
 
 func DoReadOneRequest(id string) ([]byte, error) {
 	req, _ := http.NewRequest("GET", "http://localhost:8000/users/"+id, nil)
 	body, err := ClientDo(req)
+	if err != nil {
+		return nil, err
+	}
 	return body, err
 }
 

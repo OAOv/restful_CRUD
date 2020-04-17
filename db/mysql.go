@@ -11,6 +11,7 @@ var err error
 
 func OpenDB() (*sql.DB, error) {
 	db, err = sql.Open("mysql", "root:0000@tcp(127.0.0.1:3306)/test")
+	//db, err = sql.Open("mysql", "root:0000@tcp(192.168.99.100:3306)/test") //win10 home docker toolbox, docker-machine ip
 	return db, err
 }
 
