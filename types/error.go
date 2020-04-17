@@ -5,5 +5,7 @@ import (
 )
 
 var (
-	ErrInvalidParms = errors.New("invalid parameters")
+	ErrServerQueryError = errors.New("server cannot query")
+	ErrInvalidType      = errors.New("invalid parameters or struct type")
+	ErrInvalidParms     = errors.New("invalid parameters")
 )

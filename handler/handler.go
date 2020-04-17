@@ -25,9 +25,9 @@ func (u *UserAPI) CreateUser(c *gin.Context) {
 }
 
 func (u *UserAPI) GetUsers(c *gin.Context) {
-	users, err := u.UserService.GetUsers()
+	users, err := u.userService.GetUsers()
 	if err != nil {
-		log.Printf(types.ErrInvalidParms)
+		log.Println(types.ErrInvalidParms)
 	}
 }
 
