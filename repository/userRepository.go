@@ -45,7 +45,7 @@ func GetUsers() ([]types.User, error) {
 		var user types.User
 		err := result.Scan(&user.ID, &user.Name, &user.Age)
 		if err != nil {
-			return nil, types.ErrInvalidType
+			return nil, types.ErrInvalidParams
 		}
 		users = append(users, user)
 	}
@@ -64,7 +64,7 @@ func GetUser(id string) (types.User, error) {
 	result.Next()
 	err = result.Scan(&user.ID, &user.Name, &user.Age)
 	if err != nil {
-		return user, types.ErrInvalidType
+		return user, types.ErrInvalidParams
 	}
 
 	return user, nil

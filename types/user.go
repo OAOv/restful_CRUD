@@ -7,5 +7,6 @@ type User struct {
 }
 
 type UserData struct {
-	Data []User `json:"data"`
+	Data    []User `json:"data"`
+	Message string `json:"message"`
 }
