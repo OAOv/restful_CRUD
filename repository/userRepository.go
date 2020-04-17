@@ -2,7 +2,6 @@ package repo
 
 import (
 	"database/sql"
-	"encoding/json"
 
 	"github.com/OAOv/restful_CRUD/types"
 )
@@ -38,6 +37,7 @@ func GetUsers() ([]types.User, error) {
 	return users, nil
 }
 
+/*
 func CreateUser(body []byte) error {
 	keyVal := make(map[string]string)
 	json.Unmarshal(body, &keyVal)
@@ -95,3 +95,4 @@ func DeleteUser(parmas map[string]string) error {
 	defer stmt.Close()
 	return nil
 }
+*/

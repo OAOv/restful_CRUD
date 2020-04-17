@@ -28,6 +28,9 @@ func (u *UserAPI) GetUsers(c *gin.Context) {
 	users, err := u.userService.GetUsers()
 	if err != nil {
 		log.Println(types.ErrInvalidParms)
+		json.NewEncoder(c).Encode("{status: \"fatal\", message \"server cannot query\"}")
+	} else {
+		json.NewEncoder(c).Encode(users)
 	}
 }
 
