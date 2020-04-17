@@ -46,7 +46,7 @@ func (u *UserAPI) CreateUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusInternalServerError, gin.H{
 		"data":    nil,
-		"message": "create compeleted",
+		"message": "create completed",
 	})
 	return
 }
@@ -62,7 +62,7 @@ func (u *UserAPI) GetUsers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data":    users,
-		"message": "readAll compeleted",
+		"message": "readAll completed",
 	})
 }
 
@@ -97,7 +97,7 @@ func (u *UserAPI) GetUser(c *gin.Context) {
 	users = append(users, user)
 	c.JSON(http.StatusOK, gin.H{
 		"data":    users,
-		"message": "readOne compeleted",
+		"message": "readOne completed",
 	})
 	return
 }
@@ -135,7 +135,7 @@ func (u *UserAPI) UpdateUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data":    nil,
-		"message": "update compeleted",
+		"message": "update completed",
 	})
 }
 
@@ -165,7 +165,7 @@ func (u *UserAPI) DeleteUser(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data":    nil,
-		"message": "delete compeleted",
+		"message": "delete completed",
 	})
 }
 
