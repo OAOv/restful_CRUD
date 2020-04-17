@@ -39,6 +39,20 @@ func (u *UserAPI) GetUsers(c *gin.Context) {
 }
 
 func (u *UserAPI) GetUser(c *gin.Context) {
+	user, err := u.userService.GetUser(c.Param("id"))
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
+	//userData.data is a list
+	var users []types.User
+	users = append(users, user)
+	c.JSON(http.StatusOK, gin.H{
+		"data": users,
+	})
 }
 
 func (u *UserAPI) UpdateUser(c *gin.Context) {
@@ -50,7 +64,7 @@ func (u *UserAPI) DeleteUser(c *gin.Context) {
 func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("./view/layout.html"))
 
-	var users []types.UserData
+	var users types.UserData
 	var body []byte
 	var err error
 	if !isOne {
@@ -61,7 +75,7 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 		body, err = DoReadOneRequest(searchID)
 		json.Unmarshal(body, &users)
 	}
-	log.Println(string(body))
+	log.Println("Body Response: " + string(body))
 
 	if r.Method != http.MethodPost {
 		tmpl.Execute(w, struct {
@@ -95,7 +109,6 @@ func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Println("Body response: " + string(body))
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }

@@ -16,3 +16,11 @@ func (u *UserService) GetUsers() ([]types.User, error) {
 	}
 	return users, nil
 }
+
+func (u *UserService) GetUser(id string) (types.User, error) {
+	user, err := repository.GetUser(id)
+	if err != nil {
+		return user, err
+	}
+	return user, nil
+}

@@ -39,7 +39,7 @@ func DoReadAllRequest() ([]byte, error) {
 }
 
 func DoReadOneRequest(id string) ([]byte, error) {
-	req, _ := http.NewRequest("GET", "http://localhost:8000/users/"+id, nil)
+	req, _ := http.NewRequest(http.MethodGet, "http://localhost:8000/user/"+id, nil)
 	body, err := ClientDo(req)
 	if err != nil {
 		return nil, err

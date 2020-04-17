@@ -16,6 +16,22 @@ func OpenDB() (*sql.DB, error) {
 	return db, err
 }
 
+/*
+func CreateUser(body []byte) error {
+	keyVal := make(map[string]string)
+	json.Unmarshal(body, &keyVal)
+	name := keyVal["name"]
+	age := keyVal["age"]
+
+	stmt, err := db.CreateUser(name, age)
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+	return nil
+}
+*/
 func GetUsers() ([]types.User, error) {
 	var users []types.User
 
@@ -37,42 +53,24 @@ func GetUsers() ([]types.User, error) {
 	return users, nil
 }
 
+func GetUser(id string) (types.User, error) {
+	var user types.User
+	result, err := db.Query("SELECT * FROM user WHERE id = ?", id)
+	defer result.Close()
+	if err != nil {
+		return user, types.ErrServerQueryError
+	}
+
+	result.Next()
+	err = result.Scan(&user.ID, &user.Name, &user.Age)
+	if err != nil {
+		return user, types.ErrInvalidType
+	}
+
+	return user, nil
+}
+
 /*
-func CreateUser(body []byte) error {
-	keyVal := make(map[string]string)
-	json.Unmarshal(body, &keyVal)
-	name := keyVal["name"]
-	age := keyVal["age"]
-
-	stmt, err := db.CreateUser(name, age)
-	if err != nil {
-		return err
-	}
-
-	defer stmt.Close()
-	return nil
-}
-
-func GetUser(params map[string]string) ([]types.User, error) {
-	var users []types.User
-	result, err := db.GetUser(params["id"])
-	if err != nil {
-		return nil, err
-	}
-
-	for result.Next() {
-		var user types.User
-		err := result.Scan(&user.ID, &user.Name, &user.Age)
-		if err != nil {
-			return nil, err
-		}
-		users = append(users, user)
-	}
-
-	result.Close()
-	return users, nil
-}
-
 func UpdateUser(params map[string]string, body []byte) error {
 	keyVal := make(map[string]string)
 	json.Unmarshal(body, &keyVal)
