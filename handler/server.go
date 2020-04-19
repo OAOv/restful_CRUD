@@ -7,11 +7,11 @@ import (
 )
 
 func RunHTTPServer() {
-	routerSQL := mux.NewRouter()
-	Router(routerSQL)
+	router := mux.NewRouter()
+	Router(router)
 
 	go func() {
-		err := http.ListenAndServe(":8000", routerSQL)
+		err := http.ListenAndServe(":8000", router)
 		if err != nil {
 			panic(err.Error())
 		}

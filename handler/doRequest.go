@@ -57,6 +57,8 @@ func DoUpdateRequest(id string, name string, age string) ([]byte, error) {
 		jsonStr = []byte("{\"name\":\"" + name + "\"}")
 	} else if name == "" && age != "" {
 		jsonStr = []byte("{\"age\":\"" + age + "\"}")
+	} else {
+		return nil, nil
 	}
 	req, _ := http.NewRequest("PATCH", url+"/"+id, bytes.NewBuffer(jsonStr))
 	body, err := ClientDo(req)
