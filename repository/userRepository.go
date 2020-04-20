@@ -1,22 +1,12 @@
 package repository
 
 import (
-	"database/sql"
-
 	"github.com/OAOv/restful_CRUD/types"
 )
 
 type UserRepository struct{}
 
-var db *sql.DB
-var err error
-
-func OpenDB() (*sql.DB, error) {
-	db, err = sql.Open("mysql", "root:0000@tcp(127.0.0.1:3306)/test")
-	return db, err
-}
-
-func CreateUser(user types.User) error {
+func (u *UserRepository) CreateUser(user types.User) error {
 	stmt, err := db.Prepare("INSERT INTO user (id, name, age) VALUES (?, ?, ?)")
 	defer stmt.Close()
 	if err != nil {
@@ -33,7 +23,7 @@ func CreateUser(user types.User) error {
 	return nil
 }
 
-func GetUsers() ([]types.User, error) {
+func (u *UserRepository) GetUsers() ([]types.User, error) {
 	var users []types.User
 
 	result, err := db.Query("SELECT * FROM user")
@@ -54,7 +44,7 @@ func GetUsers() ([]types.User, error) {
 	return users, nil
 }
 
-func GetUser(id string) (types.User, error) {
+func (u *UserRepository) GetUser(id string) (types.User, error) {
 	var user types.User
 	result, err := db.Query("SELECT * FROM user WHERE id = ?", id)
 	defer result.Close()
@@ -71,7 +61,7 @@ func GetUser(id string) (types.User, error) {
 	return user, nil
 }
 
-func UpdateUser(user types.User) error {
+func (u *UserRepository) UpdateUser(user types.User) error {
 	stmt, err := db.Prepare("UPDATE user SET name  = ?, age = ? WHERE id = ?")
 	defer stmt.Close()
 
@@ -92,7 +82,7 @@ func UpdateUser(user types.User) error {
 	return nil
 }
 
-func DeleteUser(id string) error {
+func (u *UserRepository) DeleteUser(id string) error {
 	stmt, err := db.Prepare("DELETE FROM user WHERE id = ?")
 	defer stmt.Close()
 	if err != nil {

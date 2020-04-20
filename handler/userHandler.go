@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
-	"text/template"
 
 	"github.com/OAOv/restful_CRUD/service"
 	"github.com/OAOv/restful_CRUD/types"
@@ -13,17 +11,8 @@ import (
 )
 
 type UserAPI struct {
-	userService service.UserService
+	userService service.Service
 }
-
-type FHandler struct {
-}
-
-var isOne = false
-var isGet = true
-var searchID = ""
-var body []byte
-var err error
 
 func (u *UserAPI) CreateUser(c *gin.Context) {
 	user := types.User{}
@@ -48,7 +37,6 @@ func (u *UserAPI) CreateUser(c *gin.Context) {
 		"data":    nil,
 		"message": "create completed",
 	})
-	return
 }
 
 func (u *UserAPI) GetUsers(c *gin.Context) {
@@ -99,7 +87,6 @@ func (u *UserAPI) GetUser(c *gin.Context) {
 		"data":    users,
 		"message": "readOne completed",
 	})
-	return
 }
 
 func (u *UserAPI) UpdateUser(c *gin.Context) {
@@ -167,64 +154,4 @@ func (u *UserAPI) DeleteUser(c *gin.Context) {
 		"data":    nil,
 		"message": "delete completed",
 	})
-}
-
-func (fh *FHandler) TmplHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("./view/layout.html"))
-
-	var users types.UserData
-
-	if r.Method != http.MethodPost {
-		if !isOne && isGet {
-			body, err = DoReadAllRequest()
-		} else if isGet {
-			isOne = false
-			body, err = DoReadOneRequest(searchID)
-		}
-
-		log.Println("Body Response: " + string(body))
-		json.Unmarshal(body, &users)
-
-		tmpl.Execute(w, struct {
-			Title   string
-			Input   []string
-			Operate []string
-			Data    []types.User
-			Message string
-		}{
-			Title:   "users",
-			Input:   []string{"ID", "Name", "Age"},
-			Operate: []string{"create", "readAll", "readOne", "update", "delete"},
-			Data:    users.Data,
-			Message: users.Message,
-		})
-	} else {
-		log.Println("button: " + r.FormValue("btn"))
-
-		switch r.FormValue("btn") {
-		case "create":
-			isGet = false
-			body, err = DoCreateRequest(r.FormValue("ID"), r.FormValue("Name"), r.FormValue("Age"))
-
-		case "readAll":
-			isGet = true
-
-		case "readOne":
-			isOne = true
-			isGet = true
-			searchID = r.FormValue("ID")
-
-		case "update":
-			isGet = false
-			body, err = DoUpdateRequest(r.FormValue("ID"), r.FormValue("Name"), r.FormValue("Age"))
-
-		case "delete":
-			isGet = false
-			body, err = DoDeleteRequset(r.FormValue("ID"))
-		}
-		if err != nil {
-			log.Fatal(err)
-		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
-	}
 }

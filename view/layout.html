@@ -5,34 +5,77 @@
 <body>
     <h1>{{ .Title }}</h1>
 
-    <form method = "POST">
-        {{ range $index, $value := .Input }}
-            <h4>{{ . }}</h4>
-            <input type = "text" name = "{{ . }}"></input>
-        {{end}}
-        <br></br>
+    <div style="width: 700px; height: 400px;">
+        <div style="display: inline-block; width: 320px;">
+            <form method = "POST">
+                {{ range $index, $value := .UserInput }}
+                    <h4>{{ . }}</h4>
+                    <input type = "text" name = "{{ . }}"></input>
+                {{end}}
+                <br></br>
 
-        {{ range $index, $value := .Operate }}
-        <input type = "submit" id = "{{ . }}" value = "{{ . }}" name = "btn"></input>
-        {{end}}
-    </form>
+                {{ range $index, $value := .Operate }}
+                <input type = "submit" id = "{{ . }}" value = "{{ . }}" name = "btn"></input>
+                {{end}}
+            </form>
+        </div>
 
-    <table style="width: 300; border:3px #cccccc solid; padding:5px; text-align: center;" rules="all" cellpadding='5';>
-    <tr>
-    {{ range $index, $value := .Input }}
-        <td>{{ . }}</td>
-    {{end}}
-    </tr>
-    {{ range $item := .Data }}
-    <tr>
-        <td>{{ .ID }}</td>
-        <td>{{ .Name }}</td>
-        <td>{{ .Age }}</td>
-    </tr>
-    {{end}}
-    <tr>
-        <td colspan="3">{{ .Message }}</td>
-    </tr>
-    </table>
+        <div style="width: 320px; float: right;">
+            <form method = "POST">
+                {{ range $index, $value := .RecordInput }}
+                    <h4>{{ . }}</h4>
+                    <input type = "text" name = "{{ . }}"></input>
+                {{end}}
+                <br></br>
+
+                {{ range $index, $value := .Operate }}
+                <input type = "submit" id = "{{ . }}" value = "{{ . }}" name = "btn"></input>
+                {{end}}
+            </form>
+        </div>
+    </div>
+
+    <div style="width: 700px;">
+        <div style="display: inline-block;">
+            <table style="width: 320px; border:3px #cccccc solid; padding:5px; text-align: center;" rules="all" cellpadding='5';>
+                <tr>
+                {{ range $index, $value := .UserInput }}
+                    <td>{{ . }}</td>
+                {{end}}
+                </tr>
+                {{ range $item := .UserData }}
+                <tr>
+                    <td>{{ .ID }}</td>
+                    <td>{{ .Name }}</td>
+                    <td>{{ .Age }}</td>
+                </tr>
+                {{end}}
+                <tr>
+                    <td colspan="3">{{ .UserMessage }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="display: inline-block; float: right;">
+            <table style="width: 320px; border:3px #cccccc solid; padding:5px; text-align: center;" rules="all" cellpadding='5';>
+                <tr>
+                {{ range $index, $value := .RecordTable }}
+                    <td>{{ . }}</td>
+                {{end}}
+                </tr>
+                {{ range $item := .RecordData }}
+                <tr>
+                    <td>{{ .ID }}</td>
+                    <td>{{ .UserName }}</td>
+                    <td>{{ .Subject }}</td>
+                    <td>{{ .Score }}</td>
+                </tr>
+                {{end}}
+                <tr>
+                    <td colspan="4">{{ .RecordMessage }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </body>
 </html>
