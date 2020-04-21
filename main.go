@@ -1,16 +1,17 @@
 package main
 
 import (
-	"github.com/OAOv/restful_CRUD/db"
-	"github.com/OAOv/restful_CRUD/handler"
+	"github.com/OAOv/restful_CRUD/repository"
+	"github.com/OAOv/restful_CRUD/server"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func main() {
-	mysqlDB, err := db.OpenDB()
+	mysqlDB, err := repository.OpenDB()
 	if err != nil {
 		panic(err)
 	}
 	defer mysqlDB.Close()
 
-	handler.RunHTTPServer()
+	server.RunHTTPServer()
 }
