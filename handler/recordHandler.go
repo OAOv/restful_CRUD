@@ -45,7 +45,7 @@ func (r *RecordAPI) CreateRecord(c *gin.Context) {
 		})
 		return
 	}
-	c.JSON(http.StatusInternalServerError, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"data":    nil,
 		"message": "create completed",
 	})
