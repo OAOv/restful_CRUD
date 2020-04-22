@@ -147,7 +147,7 @@ func (r *RecordAPI) UpdateRecord(c *gin.Context) {
 			"message": types.ErrInvalidInputRange.Error(),
 		})
 		return
-	} else if record.UserID == "" && record.Subject == "" && record.Score == "" {
+	} else if record.UserID == "" || record.Subject == "" || record.Score == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"data":    nil,
 			"message": types.ErrEmptyInput.Error(),
