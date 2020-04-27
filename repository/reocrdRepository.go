@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"log"
-
 	"github.com/OAOv/restful_CRUD/types"
 )
 
@@ -113,8 +111,7 @@ func (r *RecordRepository) UpdateReocrd(id string, record map[string]interface{}
 			sql += ", " + key + " = \"" + value.(string) + "\""
 		}
 	}
-	sql += ", user_name = (SELECT name FROM user WHERE id = " + record["user_id"].(string) + ") WHERE id = \"" + id + "\""
-	log.Println(sql)
+	sql += ", user_name = (SELECT name FROM user WHERE id = " + record["user_id"].(string) + ") WHERE id = " + id
 	_, err = tx.Exec(sql)
 	if err != nil {
 		tx.Rollback()

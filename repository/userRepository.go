@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/OAOv/restful_CRUD/types"
 )
 
@@ -63,6 +65,7 @@ func (u *UserRepository) GetUser(id string) (types.User, error) {
 }
 
 func (u *UserRepository) UpdateUser(id string, user map[string]interface{}) error {
+	var data types.User
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -74,7 +77,7 @@ func (u *UserRepository) UpdateUser(id string, user map[string]interface{}) erro
 		return types.ErrServerQueryError
 	}
 	result.Next()
-	err = result.Scan()
+	err = result.Scan(&data.ID, &data.Name, &data.Age)
 	if err != nil {
 		return types.ErrNotFound
 	}
@@ -97,7 +100,8 @@ func (u *UserRepository) UpdateUser(id string, user map[string]interface{}) erro
 		return types.ErrServerQueryError
 	}
 
-	sql = "UPDATE record SET user_name = (SELECT name FROM user WHERE id = \"" + id + "\") WHERE user_id = \"" + id + "\""
+	sql = "UPDATE record SET user_name = (SELECT name FROM user WHERE id = " + id + ") WHERE user_id = " + id
+	log.Println(sql)
 	_, err = tx.Exec(sql)
 	if err != nil {
 		tx.Rollback()
@@ -112,7 +116,6 @@ func (u *UserRepository) UpdateUser(id string, user map[string]interface{}) erro
 	return nil
 }
 
-//transaction
 func (u *UserRepository) DeleteUser(id string) error {
 	tx, err := db.Begin()
 	if err != nil {
