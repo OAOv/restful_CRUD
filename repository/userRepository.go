@@ -62,36 +62,52 @@ func (u *UserRepository) GetUser(id string) (types.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) UpdateUser(user types.User, testVar map[string]string) error {
-	stmt, err := db.Prepare("UPDATE user SET name  = ?, age = ? WHERE id = ?")
-
-	if user.Name != "" && user.Age == "" {
-		stmt, err = db.Prepare("UPDATE user SET name  = ? WHERE id = ?")
-		_, err = stmt.Exec(user.Name, user.ID)
-	} else if user.Name == "" && user.Age != "" {
-		stmt, err = db.Prepare("UPDATE user SET age = ? WHERE id = ?")
-		_, err = stmt.Exec(user.Age, user.ID)
-	} else {
-		_, err = stmt.Exec(user.Name, user.Age, user.ID)
+func (u *UserRepository) UpdateUser(id string, user map[string]interface{}) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
 	}
 
-	/*
-		isFirst := true
-		sql := "UPDATE user SET"
-		for key, value := range testVar {
-			if isFirst {
-				sql += " " + key + " = " + value
-			} else {
-				sql += ", " + key + " = " + value
-			}
-		}
-		sql += " WHERE id = " + id
-	*/
-
+	result, err := tx.Query("SELECT * FROM user WHERE id = ?", id)
 	if err != nil {
+		tx.Rollback()
 		return types.ErrServerQueryError
 	}
-	defer stmt.Close()
+	result.Next()
+	err = result.Scan()
+	if err != nil {
+		return types.ErrNotFound
+	}
+	result.Close()
+
+	isFirst := true
+	sql := "UPDATE user SET"
+	for key, value := range user {
+		if isFirst {
+			sql += " " + key + " = \"" + value.(string) + "\""
+			isFirst = false
+		} else {
+			sql += ", " + key + " = \"" + value.(string) + "\""
+		}
+	}
+	sql += " WHERE id = " + id
+	_, err = tx.Exec(sql)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+
+	sql = "UPDATE record SET user_name = (SELECT name FROM user WHERE id = \"" + id + "\") WHERE user_id = \"" + id + "\""
+	_, err = tx.Exec(sql)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -100,7 +116,7 @@ func (u *UserRepository) UpdateUser(user types.User, testVar map[string]string) 
 func (u *UserRepository) DeleteUser(id string) error {
 	tx, err := db.Begin()
 	if err != nil {
-		return nil
+		return err
 	}
 
 	_, err = tx.Exec("DELETE FROM record WHERE user_id = ?", id)

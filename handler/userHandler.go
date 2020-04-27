@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/OAOv/restful_CRUD/service"
@@ -112,7 +113,19 @@ func (u *UserAPI) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	err = u.userService.UpdateUser(user)
+	key := reflect.TypeOf(user)
+	value := reflect.ValueOf(user)
+	var data = make(map[string]interface{})
+	for i := 0; i < key.NumField(); i++ {
+		tmpKey := key.Field(i).Tag.Get("json")
+		tmpValue := value.Field(i).Interface()
+		if tmpKey == "id" || tmpValue == "" {
+			continue
+		}
+		data[tmpKey] = tmpValue
+	}
+
+	err = u.userService.UpdateUser(user.ID, data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"data":    nil,

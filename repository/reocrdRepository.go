@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/OAOv/restful_CRUD/types"
 )
 
@@ -82,42 +84,46 @@ func (r *RecordRepository) GetRecordByUser(id string) ([]types.Record, error) {
 	return records, nil
 }
 
-func (r *RecordRepository) UpdateReocrd(record types.Record) error {
-	if record.UserName == "" {
-		var user types.User
-		result, err := db.Query("SELECT * FROM user WHERE id = ?", record.UserID)
-		if err != nil {
-			return types.ErrServerQueryError
-		}
-		defer result.Close()
+func (r *RecordRepository) UpdateReocrd(id string, record map[string]interface{}) error {
+	var data types.Record
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
 
-		result.Next()
-		err = result.Scan(&user.ID, &user.Name, &user.Age)
-		if err != nil {
-			return types.ErrNotFound
-		}
+	result, err := tx.Query("SELECT * FROM record WHERE id = ?", id)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+	result.Next()
+	err = result.Scan(&data.ID, &data.UserID, &data.UserName, &data.Subject, &data.Score)
+	if err != nil {
+		return types.ErrNotFound
+	}
+	result.Close()
 
-		stmt, err := db.Prepare("UPDATE record SET user_id  = ?, user_name = (SELECT name FROM user WHERE id = ?), subject = ?, score = ? WHERE id = ?")
-		if err != nil {
-			return types.ErrServerQueryError
+	isFirst := true
+	sql := "UPDATE record SET"
+	for key, value := range record {
+		if isFirst {
+			sql += " " + key + " = \"" + value.(string) + "\""
+			isFirst = false
+		} else {
+			sql += ", " + key + " = \"" + value.(string) + "\""
 		}
-		defer stmt.Close()
+	}
+	sql += ", user_name = (SELECT name FROM user WHERE id = " + record["user_id"].(string) + ") WHERE id = \"" + id + "\""
+	log.Println(sql)
+	_, err = tx.Exec(sql)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
 
-		_, err = stmt.Exec(record.UserID, record.UserID, record.Subject, record.Score, record.ID)
-		if err != nil {
-			return types.ErrServerQueryError
-		}
-	} else {
-		stmt, err := db.Prepare("UPDATE record SET user_name = (SELECT name FROM user WHERE id = ?) WHERE user_id = ?")
-		if err != nil {
-			return types.ErrServerQueryError
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(record.UserID, record.UserID)
-		if err != nil {
-			return types.ErrServerQueryError
-		}
+	err = tx.Commit()
+	if err != nil {
+		return err
 	}
 
 	return nil

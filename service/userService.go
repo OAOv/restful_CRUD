@@ -17,11 +17,8 @@ func (s *Service) GetUser(id string) (types.User, error) {
 	return user, err
 }
 
-func (s *Service) UpdateUser(user types.User) error {
-	err := s.userRepository.UpdateUser(user)
-	if user.Name != "" {
-		err = s.recordRepository.UpdateReocrd(types.Record{UserID: user.ID, UserName: user.Name})
-	}
+func (s *Service) UpdateUser(id string, user map[string]interface{}) error {
+	err := s.userRepository.UpdateUser(id, user)
 	return err
 }
 

@@ -22,8 +22,8 @@ func (s *Service) GetRecordByUser(id string) ([]types.Record, error) {
 	return records, err
 }
 
-func (s *Service) UpdateRecord(record types.Record) error {
-	err := s.recordRepository.UpdateReocrd(record)
+func (s *Service) UpdateRecord(id string, record map[string]interface{}) error {
+	err := s.recordRepository.UpdateReocrd(id, record)
 	return err
 }
 
