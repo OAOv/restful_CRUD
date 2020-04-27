@@ -6,6 +6,8 @@ import (
 	"net/http"
 )
 
+var url = "http://localhost:8000/users"
+
 func ClientDo(req *http.Request) ([]byte, error) {
 	client := http.Client{}
 	resp, err := client.Do(req)
