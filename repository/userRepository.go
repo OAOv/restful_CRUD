@@ -8,10 +8,11 @@ type UserRepository struct{}
 
 func (u *UserRepository) CreateUser(user types.User) error {
 	stmt, err := db.Prepare("INSERT INTO user (id, name, age) VALUES (?, ?, ?)")
-	defer stmt.Close()
 	if err != nil {
 		return types.ErrServerQueryError
 	}
+	defer stmt.Close()
+
 	if user.ID == "" {
 		user.ID = "0"
 	}
@@ -27,10 +28,10 @@ func (u *UserRepository) GetUsers() ([]types.User, error) {
 	var users []types.User
 
 	result, err := db.Query("SELECT * FROM user")
-	defer result.Close()
 	if err != nil {
 		return nil, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	for result.Next() {
 		var user types.User
@@ -47,10 +48,10 @@ func (u *UserRepository) GetUsers() ([]types.User, error) {
 func (u *UserRepository) GetUser(id string) (types.User, error) {
 	var user types.User
 	result, err := db.Query("SELECT * FROM user WHERE id = ?", id)
-	defer result.Close()
 	if err != nil {
 		return user, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	result.Next()
 	err = result.Scan(&user.ID, &user.Name, &user.Age)
@@ -61,9 +62,8 @@ func (u *UserRepository) GetUser(id string) (types.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) UpdateUser(user types.User) error {
+func (u *UserRepository) UpdateUser(user types.User, testVar map[string]string) error {
 	stmt, err := db.Prepare("UPDATE user SET name  = ?, age = ? WHERE id = ?")
-	defer stmt.Close()
 
 	if user.Name != "" && user.Age == "" {
 		stmt, err = db.Prepare("UPDATE user SET name  = ? WHERE id = ?")
@@ -75,23 +75,49 @@ func (u *UserRepository) UpdateUser(user types.User) error {
 		_, err = stmt.Exec(user.Name, user.Age, user.ID)
 	}
 
+	/*
+		isFirst := true
+		sql := "UPDATE user SET"
+		for key, value := range testVar {
+			if isFirst {
+				sql += " " + key + " = " + value
+			} else {
+				sql += ", " + key + " = " + value
+			}
+		}
+		sql += " WHERE id = " + id
+	*/
+
 	if err != nil {
 		return types.ErrServerQueryError
 	}
+	defer stmt.Close()
 
 	return nil
 }
 
+//transaction
 func (u *UserRepository) DeleteUser(id string) error {
-	stmt, err := db.Prepare("DELETE FROM user WHERE id = ?")
-	defer stmt.Close()
+	tx, err := db.Begin()
 	if err != nil {
+		return nil
+	}
+
+	_, err = tx.Exec("DELETE FROM record WHERE user_id = ?", id)
+	if err != nil {
+		tx.Rollback()
 		return types.ErrServerQueryError
 	}
 
-	_, err = stmt.Exec(id)
+	_, err = tx.Exec("DELETE FROM user WHERE id = ?", id)
 	if err != nil {
+		tx.Rollback()
 		return types.ErrServerQueryError
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil
 	}
 
 	return nil
