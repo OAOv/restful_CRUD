@@ -37,9 +37,11 @@ func (s *Service) UpdateUser(user types.User) error {
 func (s *Service) DeleteUser(id string) error {
 	err := s.userRepository.DeleteUser(id)
 	if err != nil {
-		return nil
+		return err
 	}
 	err = s.recordRepository.DeleteRecord(id, true)
+	//要同時成功或失敗
+	//record > user, 外來鍵
 	return err
 }
 

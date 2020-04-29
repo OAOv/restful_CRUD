@@ -114,14 +114,21 @@ func (r *RecordRepository) UpdateReocrd(record types.Record) error {
 }
 
 func (r *RecordRepository) DeleteRecord(id string, isUser bool) error {
-	stmt, err := db.Prepare("DELETE FROM record WHERE id = ?")
+	str := "DELETE FROM record WHERE "
+	if isUser {
+		str += "user_id = ?"
+	}
+	stmt, err := db.Prepare(str)
+	//多個欄位
+
+	/*stmt, err := db.Prepare("DELETE FROM record WHERE id = ?")
 	if isUser {
 		stmt, err = db.Prepare("DELETE FROM record WHERE user_id = ?")
-	}
-	defer stmt.Close()
+	}*/
 	if err != nil {
 		return types.ErrServerQueryError
 	}
+	defer stmt.Close() //如果stmt是null, 這樣Close位置要擺好
 
 	_, err = stmt.Exec(id)
 	if err != nil {
