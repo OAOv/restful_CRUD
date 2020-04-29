@@ -8,10 +8,11 @@ type RecordRepository struct{}
 
 func (r *RecordRepository) CreateRecord(record types.Record) error {
 	stmt, err := db.Prepare("INSERT INTO record (id, user_id, user_name, subject, score) VALUES (?, ?, (SELECT name FROM user WHERE id = ?), ?, ?)")
-	defer stmt.Close()
 	if err != nil {
 		return types.ErrServerQueryError
 	}
+	defer stmt.Close()
+
 	if record.ID == "" {
 		record.ID = "0"
 	}
@@ -27,10 +28,10 @@ func (r *RecordRepository) GetRecords() ([]types.Record, error) {
 	var records []types.Record
 
 	result, err := db.Query("SELECT * FROM record")
-	defer result.Close()
 	if err != nil {
 		return nil, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	for result.Next() {
 		var record types.Record
@@ -47,10 +48,10 @@ func (r *RecordRepository) GetRecords() ([]types.Record, error) {
 func (r *RecordRepository) GetRecord(id string) (types.Record, error) {
 	var record types.Record
 	result, err := db.Query("SELECT * FROM record WHERE id = ?", id)
-	defer result.Close()
 	if err != nil {
 		return record, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	result.Next()
 	err = result.Scan(&record.ID, &record.UserID, &record.UserName, &record.Subject, &record.Score)
@@ -64,10 +65,10 @@ func (r *RecordRepository) GetRecord(id string) (types.Record, error) {
 func (r *RecordRepository) GetRecordByUser(id string) ([]types.Record, error) {
 	var records []types.Record
 	result, err := db.Query("SELECT * FROM record WHERE user_id = ?", id)
-	defer result.Close()
 	if err != nil {
 		return nil, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	for result.Next() {
 		var record types.Record
@@ -81,54 +82,56 @@ func (r *RecordRepository) GetRecordByUser(id string) ([]types.Record, error) {
 	return records, nil
 }
 
-func (r *RecordRepository) UpdateReocrd(record types.Record) error {
-	if record.UserName == "" {
-		var user types.User
-		result, err := db.Query("SELECT * FROM user WHERE id = ?", record.UserID)
-		defer result.Close()
-		if err != nil {
-			return types.ErrServerQueryError
-		}
-		result.Next()
-		err = result.Scan(&user.ID, &user.Name, &user.Age)
-		if err != nil {
-			return types.ErrNotFound
-		}
+func (r *RecordRepository) UpdateReocrd(id string, record map[string]interface{}) error {
+	var data types.Record
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
 
-		stmt, err := db.Prepare("UPDATE record SET user_id  = ?, user_name = (SELECT name FROM user WHERE id = ?), subject = ?, score = ? WHERE id = ?")
-		defer stmt.Close()
-		_, err = stmt.Exec(record.UserID, record.UserID, record.Subject, record.Score, record.ID)
-		if err != nil {
-			return types.ErrServerQueryError
+	result, err := tx.Query("SELECT * FROM record WHERE id = ?", id)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+	result.Next()
+	err = result.Scan(&data.ID, &data.UserID, &data.UserName, &data.Subject, &data.Score)
+	if err != nil {
+		return types.ErrNotFound
+	}
+	result.Close()
+
+	isFirst := true
+	sql := "UPDATE record SET"
+	for key, value := range record {
+		if isFirst {
+			sql += " " + key + " = \"" + value.(string) + "\""
+			isFirst = false
+		} else {
+			sql += ", " + key + " = \"" + value.(string) + "\""
 		}
-	} else {
-		stmt, err := db.Prepare("UPDATE record SET user_name = (SELECT name FROM user WHERE id = ?) WHERE user_id = ?")
-		defer stmt.Close()
-		_, err = stmt.Exec(record.UserID, record.UserID)
-		if err != nil {
-			return types.ErrServerQueryError
-		}
+	}
+	sql += ", user_name = (SELECT name FROM user WHERE id = " + record["user_id"].(string) + ") WHERE id = " + id
+	_, err = tx.Exec(sql)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func (r *RecordRepository) DeleteRecord(id string, isUser bool) error {
-	str := "DELETE FROM record WHERE "
-	if isUser {
-		str += "user_id = ?"
-	}
-	stmt, err := db.Prepare(str)
-	//多個欄位
-
-	/*stmt, err := db.Prepare("DELETE FROM record WHERE id = ?")
-	if isUser {
-		stmt, err = db.Prepare("DELETE FROM record WHERE user_id = ?")
-	}*/
+func (r *RecordRepository) DeleteRecord(id string) error {
+	stmt, err := db.Prepare("DELETE FROM record WHERE id = ?")
 	if err != nil {
 		return types.ErrServerQueryError
 	}
-	defer stmt.Close() //如果stmt是null, 這樣Close位置要擺好
+	defer stmt.Close()
 
 	_, err = stmt.Exec(id)
 	if err != nil {

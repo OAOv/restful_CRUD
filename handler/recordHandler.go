@@ -3,6 +3,7 @@ package handler
 import (
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 
 	"github.com/OAOv/restful_CRUD/service"
@@ -147,7 +148,7 @@ func (r *RecordAPI) UpdateRecord(c *gin.Context) {
 			"message": types.ErrInvalidInputRange.Error(),
 		})
 		return
-	} else if record.UserID == "" || record.Subject == "" || record.Score == "" {
+	} else if record.UserID == "" && record.Subject == "" && record.Score == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"data":    nil,
 			"message": types.ErrEmptyInput.Error(),
@@ -155,7 +156,19 @@ func (r *RecordAPI) UpdateRecord(c *gin.Context) {
 		return
 	}
 
-	err = r.recordService.UpdateRecord(record)
+	key := reflect.TypeOf(record)
+	value := reflect.ValueOf(record)
+	var data = make(map[string]interface{})
+	for i := 0; i < key.NumField(); i++ {
+		tmpKey := key.Field(i).Tag.Get("json")
+		tmpValue := value.Field(i).Interface()
+		if tmpKey == "id" || tmpValue == "" {
+			continue
+		}
+		data[tmpKey] = tmpValue
+	}
+
+	err = r.recordService.UpdateRecord(record.ID, data)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"data":    nil,
@@ -185,7 +198,7 @@ func (r *RecordAPI) DeleteRecord(c *gin.Context) {
 		return
 	}
 
-	err = r.recordService.DeleteRecord(id, false)
+	err = r.recordService.DeleteRecord(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"data":    nil,

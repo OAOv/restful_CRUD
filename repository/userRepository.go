@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/OAOv/restful_CRUD/types"
 )
 
@@ -8,10 +10,11 @@ type UserRepository struct{}
 
 func (u *UserRepository) CreateUser(user types.User) error {
 	stmt, err := db.Prepare("INSERT INTO user (id, name, age) VALUES (?, ?, ?)")
-	defer stmt.Close()
 	if err != nil {
 		return types.ErrServerQueryError
 	}
+	defer stmt.Close()
+
 	if user.ID == "" {
 		user.ID = "0"
 	}
@@ -27,10 +30,10 @@ func (u *UserRepository) GetUsers() ([]types.User, error) {
 	var users []types.User
 
 	result, err := db.Query("SELECT * FROM user")
-	defer result.Close()
 	if err != nil {
 		return nil, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	for result.Next() {
 		var user types.User
@@ -47,10 +50,10 @@ func (u *UserRepository) GetUsers() ([]types.User, error) {
 func (u *UserRepository) GetUser(id string) (types.User, error) {
 	var user types.User
 	result, err := db.Query("SELECT * FROM user WHERE id = ?", id)
-	defer result.Close()
 	if err != nil {
 		return user, types.ErrServerQueryError
 	}
+	defer result.Close()
 
 	result.Next()
 	err = result.Scan(&user.ID, &user.Name, &user.Age)
@@ -61,37 +64,79 @@ func (u *UserRepository) GetUser(id string) (types.User, error) {
 	return user, nil
 }
 
-func (u *UserRepository) UpdateUser(user types.User) error {
-	stmt, err := db.Prepare("UPDATE user SET name  = ?, age = ? WHERE id = ?")
-	defer stmt.Close()
-
-	if user.Name != "" && user.Age == "" {
-		stmt, err = db.Prepare("UPDATE user SET name  = ? WHERE id = ?")
-		_, err = stmt.Exec(user.Name, user.ID)
-	} else if user.Name == "" && user.Age != "" {
-		stmt, err = db.Prepare("UPDATE user SET age = ? WHERE id = ?")
-		_, err = stmt.Exec(user.Age, user.ID)
-	} else {
-		_, err = stmt.Exec(user.Name, user.Age, user.ID)
+func (u *UserRepository) UpdateUser(id string, user map[string]interface{}) error {
+	var data types.User
+	tx, err := db.Begin()
+	if err != nil {
+		return err
 	}
 
+	result, err := tx.Query("SELECT * FROM user WHERE id = ?", id)
 	if err != nil {
+		tx.Rollback()
 		return types.ErrServerQueryError
+	}
+	result.Next()
+	err = result.Scan(&data.ID, &data.Name, &data.Age)
+	if err != nil {
+		return types.ErrNotFound
+	}
+	result.Close()
+
+	isFirst := true
+	sql := "UPDATE user SET"
+	for key, value := range user {
+		if isFirst {
+			sql += " " + key + " = \"" + value.(string) + "\""
+			isFirst = false
+		} else {
+			sql += ", " + key + " = \"" + value.(string) + "\""
+		}
+	}
+	sql += " WHERE id = " + id
+	_, err = tx.Exec(sql)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+
+	sql = "UPDATE record SET user_name = (SELECT name FROM user WHERE id = " + id + ") WHERE user_id = " + id
+	log.Println(sql)
+	_, err = tx.Exec(sql)
+	if err != nil {
+		tx.Rollback()
+		return types.ErrServerQueryError
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
 	}
 
 	return nil
 }
 
 func (u *UserRepository) DeleteUser(id string) error {
-	stmt, err := db.Prepare("DELETE FROM user WHERE id = ?")
-	defer stmt.Close()
+	tx, err := db.Begin()
 	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec("DELETE FROM record WHERE user_id = ?", id)
+	if err != nil {
+		tx.Rollback()
 		return types.ErrServerQueryError
 	}
 
-	_, err = stmt.Exec(id)
+	_, err = tx.Exec("DELETE FROM user WHERE id = ?", id)
 	if err != nil {
+		tx.Rollback()
 		return types.ErrServerQueryError
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil
 	}
 
 	return nil
